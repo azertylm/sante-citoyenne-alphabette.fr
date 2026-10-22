@@ -6,6 +6,7 @@
   "description": "Santé Citoyenne — application de l'écosystème alphabette.fr",
   "scripts": {
     "dev": "vite",
+    "prebuild": "bun scripts/pwa-icons.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit"

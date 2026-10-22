@@ -1,0 +1,1437 @@
+/* ==========================================================================
+   SANTÉ CITOYENNE — design system de l'application.
+
+   Toute la palette dérive des variables de la base commune (--ab-*) :
+   la couleur d'identité du site (--ab-accent), le thème jour/nuit et la
+   densité BIG suivent automatiquement. Aucune teinte d'interface codée en dur
+   à part l'encre blanche posée sur l'accent (≡ 7:1 — WCAG AAA, voir bas).
+
+   Accessibilité visée — WCAG AAA :
+   · textes ≥ 7:1 sur leur fond (le « texte doux » est mixé vers l'encre) ;
+   · cibles tactiles ≥ 48 px (boutons, puces, onglets, rose des vents) ;
+   · focus clavier visible partout, zones aria-live, sémantique native ;
+   · mouvement réduit respecté (cercle souffle statique) ;
+   · impression : seule la pochette sort.
+
+   Les jetons sont posés sur .ab-shell (la coquille entière) pour que TOUT le
+   contenu de l'app — y compris la barre d'onglets fixe et les notifications,
+   qui vivent en dehors de <main> — hérite de la même palette.
+   ========================================================================== */
+
+.ab-shell {
+  /* Jetons dérivés de la base commune (~100 % --ab-*) ------------------ */
+  --sc-texte: var(--ab-ink);
+  /* Texte « doux » : mix encre + gris de la base pour rester ≥ 7:1 (AAA),
+     là où --ab-muted seul (≈ 4,8:1) n'y suffit pas. */
+  --sc-doux: color-mix(in oklab, var(--ab-muted) 42%, var(--ab-ink));
+  --sc-fond: var(--ab-bg);
+  --sc-fond-carte: var(--ab-surface);
+  --sc-fond-doux: color-mix(in oklab, var(--ab-accent) 7%, var(--ab-surface));
+  --sc-bordure: var(--ab-border);
+  --sc-vif: var(--ab-accent);
+  /* Encre posée SUR la couleur vive : blanc, garanti ≥ 7:1 sur le bleu-vert
+     sombre #155e75 (7,3:1). Toute app à accent sombre hérite la même règle. */
+  --sc-vif-encre: #fff;
+  /* Texte d'accent sur fond clair : traversé par l'encre, lisible jour/nuit. */
+  --sc-teinte: color-mix(in oklab, var(--ab-accent) 55%, var(--ab-ink));
+  /* Quatre familles d'entourage — toutes dérivées de la couleur du site. */
+  --sc-famille-sante: var(--sc-vif);
+  --sc-famille-entraide: color-mix(in oklab, var(--sc-vif) 62%, var(--ab-ok));
+  --sc-famille-ecole: color-mix(in oklab, var(--sc-vif) 58%, var(--ab-pass));
+  --sc-famille-transit: color-mix(in oklab, var(--sc-vif) 40%, var(--ab-ink));
+  /* Tendances sémantiques (déjà dans la base, ici mixées pour le texte). */
+  --sc-ok: color-mix(in oklab, var(--ab-ok) 68%, var(--ab-ink));
+  --sc-attention: color-mix(in oklab, var(--ab-warn) 62%, var(--ab-ink));
+  --sc-ombre: 0 22px 48px -30px color-mix(in oklab, var(--ab-ink) 55%, transparent);
+  --sc-ombre-nav: 0 14px 34px -18px color-mix(in oklab, var(--ab-ink) 55%, transparent);
+}
+
+/* --- Thème nuit : la teinte doit être un peu plus claire pour rester AAA. */
+html[data-ab-theme='nuit'] .ab-shell,
+.ab-shell[data-ab-theme='nuit'] {
+  --sc-fond-doux: color-mix(in oklab, var(--ab-accent) 16%, var(--ab-surface));
+  --sc-ombre: 0 22px 48px -30px color-mix(in oklab, #000 70%, transparent);
+  --sc-ombre-nav: 0 14px 34px -18px color-mix(in oklab, #000 70%, transparent);
+  /* Familles : éclaircies pour rester ≥ 7:1 sur le fond sombre. */
+  --sc-famille-sante: color-mix(in oklab, var(--sc-vif) 78%, #fff);
+  --sc-famille-entraide: color-mix(in oklab, color-mix(in oklab, var(--sc-vif) 62%, var(--ab-ok)) 72%, #fff);
+  --sc-famille-ecole: color-mix(in oklab, color-mix(in oklab, var(--sc-vif) 58%, var(--ab-pass)) 74%, #fff);
+  --sc-famille-transit: color-mix(in oklab, color-mix(in oklab, var(--sc-vif) 40%, var(--ab-ink)) 76%, #fff);
+}
+
+.sc-contenu {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: clamp(0.9rem, 3vw, 1.6rem) clamp(0.9rem, 4vw, 1.6rem) 7.5rem;
+  color: var(--sc-texte);
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.sc-contenu *,
+.sc-contenu *::before,
+.sc-contenu *::after {
+  box-sizing: border-box;
+}
+
+/* La barre fixe et les notifications vivent hors de <main> : même rigueur. */
+.sc-nav,
+.sc-nav *,
+.sc-toasts,
+.sc-toast,
+.sc-sauter {
+  box-sizing: border-box;
+}
+
+.sc-contenu ::selection {
+  background: color-mix(in oklab, var(--sc-vif) 26%, transparent);
+}
+
+/* Focus clavier : visible, épais, jamais confisqué — partout dans la coquille. */
+.ab-shell :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--sc-vif);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Entrées cachées (radio/checkbox de puces) : le focus reste visible sur le
+   libellé grâce à :has(). */
+.sc-contenu .sc-puce input,
+.sc-contenu .sc-choix__item input,
+.sc-contenu .sc-rose__item input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Texte réservé à la synthèse vocale. */
+.sc-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Lien d'évitement : devient une pastille au premier Tab. */
+.sc-sauter {
+  position: absolute;
+  top: 0.4rem;
+  left: 0.6rem;
+  z-index: 80;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 999px;
+  background: var(--sc-fond-carte);
+  color: var(--sc-texte);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(-160%);
+  pointer-events: none;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.sc-sauter:focus-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ============================== Blocs ==================================== */
+
+.sc-bloc {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.sc-carte {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: clamp(1rem, 2.6vw, 1.5rem);
+  background: var(--sc-fond-carte);
+  border: 1px solid var(--sc-bordure);
+  border-radius: 1.1rem;
+  box-shadow: var(--sc-ombre);
+}
+
+.sc-carte__tete {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  justify-content: space-between;
+}
+
+.sc-carte__titres {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.sc-carte__titre {
+  margin: 0;
+  font-size: 1.22rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--sc-texte);
+}
+
+.sc-carte__sous {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--sc-doux);
+}
+
+.sc-carte__actions {
+  flex: none;
+}
+
+/* ============================== Boutons ================================== */
+
+.sc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 48px;
+  padding: 0.55rem 1.05rem;
+  border: 1px solid transparent;
+  border-radius: 0.8rem;
+  background: color-mix(in oklab, var(--sc-fond-doux) 70%, var(--sc-fond-carte));
+  color: var(--sc-texte);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: normal;
+  transition: background 0.15s ease, transform 0.06s ease, border-color 0.15s ease;
+}
+.sc-btn:hover {
+  background: color-mix(in oklab, var(--sc-fond-doux) 100%, var(--sc-fond-carte));
+}
+.sc-btn:active {
+  transform: translateY(1px);
+}
+
+/* Principal : l'action qu'on attend — sur la couleur du site, encre blanche. */
+.sc-btn--principal {
+  background: var(--sc-vif);
+  color: var(--sc-vif-encre);
+}
+.sc-btn--principal:hover {
+  background: color-mix(in oklab, var(--sc-vif) 86%, #000);
+}
+.sc-btn--neutral {
+  background: var(--sc-fond-carte);
+  border-color: var(--sc-bordure);
+  color: var(--sc-texte);
+}
+.sc-btn--neutral:hover {
+  background: color-mix(in oklab, var(--sc-fond-doux) 60%, var(--sc-fond-carte));
+}
+.sc-btn--grand {
+  min-height: 56px;
+  padding: 0.8rem 1.3rem;
+  font-size: 1.05rem;
+  border-radius: 1rem;
+}
+
+/* Bouton-texte : discret mais gras au clavier. */
+.sc-btn--txt {
+  min-height: 44px;
+  background: transparent;
+  color: var(--sc-teinte);
+  padding: 0.4rem 0.55rem;
+  font-size: 0.88rem;
+}
+.sc-btn--txt:hover {
+  background: var(--sc-fond-doux);
+}
+
+/* Bouton d'attention — jamais rouge criard : orange foncé de la base. */
+.sc-btn--attention,
+.sc-btn--txt.sc-btn--attention {
+  color: var(--sc-attention);
+}
+.sc-btn--attention {
+  border-color: color-mix(in oklab, var(--ab-warn) 55%, transparent);
+}
+
+/* Segments (roue / liste). */
+.sc-vues {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: 0.3rem;
+  padding: 0.3rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 0.9rem;
+  align-self: flex-start;
+}
+.sc-btn--segment {
+  min-height: 44px;
+  background: transparent;
+}
+.sc-btn--segment-on {
+  background: var(--sc-vif);
+  color: var(--sc-vif-encre);
+}
+.sc-btn--segment-on:hover {
+  background: var(--sc-vif);
+}
+
+.sc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.sc-actions--haut {
+  justify-content: flex-end;
+}
+
+/* Fermer (petit bouton rond). */
+.sc-fermer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 999px;
+  background: var(--sc-fond-carte);
+  color: var(--sc-doux);
+  cursor: pointer;
+}
+.sc-fermer:hover {
+  background: var(--sc-fond-doux);
+  color: var(--sc-texte);
+}
+
+/* ============================== Formulaires ============================== */
+
+.sc-forme {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sc-champ {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.sc-etiquette-pour {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: baseline;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--sc-texte);
+}
+.sc-etiquette-indice {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 0.82rem;
+  color: var(--sc-doux);
+}
+
+.sc-saisie {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 0.7rem;
+  background: var(--sc-fond);
+  color: var(--sc-texte);
+  font: inherit;
+  font-size: 1rem;
+}
+.sc-saisie--select {
+  max-width: 17rem;
+}
+.sc-saisie--date {
+  max-width: 16rem;
+}
+textarea.sc-saisie {
+  resize: vertical;
+  min-height: 6.5rem;
+}
+.sc-saisie::placeholder {
+  color: var(--sc-doux);
+}
+
+/* Grandes options (radio tuilées). */
+.sc-choix {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+  gap: 0.55rem;
+  position: relative;
+}
+.sc-choix__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.6rem 0.7rem;
+  min-height: 64px;
+  border: 2px solid var(--sc-bordure);
+  border-radius: 0.8rem;
+  background: var(--sc-fond);
+  cursor: pointer;
+  justify-content: center;
+}
+.sc-choix__item:hover {
+  border-color: color-mix(in oklab, var(--sc-vif) 55%, var(--sc-bordure));
+}
+.sc-choix__item--actif {
+  border-color: var(--sc-vif);
+  background: var(--sc-fond-doux);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--sc-vif) 45%, transparent);
+}
+.sc-choix__item--actif .sc-choix__mot {
+  color: var(--sc-teinte);
+}
+.sc-choix__mot {
+  font-weight: 800;
+  font-size: 0.98rem;
+  color: var(--sc-texte);
+}
+.sc-choix__sous {
+  font-size: 0.8rem;
+  color: var(--sc-doux);
+}
+
+/* Puces (checkbox/boutons-filtres). */
+.sc-puce {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 48px;
+  padding: 0.4rem 0.95rem;
+  border: 2px solid var(--sc-bordure);
+  border-radius: 999px;
+  background: var(--sc-fond);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--sc-texte);
+  cursor: pointer;
+}
+.sc-puce:hover {
+  border-color: color-mix(in oklab, var(--sc-vif) 55%, var(--sc-bordure));
+}
+.sc-puce--on {
+  background: var(--sc-vif);
+  border-color: var(--sc-vif);
+  color: var(--sc-vif-encre);
+}
+.sc-puce--on:hover {
+  background: color-mix(in oklab, var(--sc-vif) 88%, #000);
+}
+.sc-puce--ligne {
+  width: fit-content;
+}
+.sc-filtres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+/* Rose des vents (8 directions, grille 4×2). */
+.sc-rose {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 22rem;
+  gap: 0.45rem;
+}
+.sc-rose__item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  border: 2px solid var(--sc-bordure);
+  border-radius: 0.7rem;
+  background: var(--sc-fond);
+  cursor: pointer;
+}
+.sc-rose__item:hover {
+  border-color: color-mix(in oklab, var(--sc-vif) 55%, var(--sc-bordure));
+}
+.sc-rose__item--actif {
+  border-color: var(--sc-vif);
+  background: var(--sc-fond-doux);
+}
+.sc-rose__initiale {
+  font-weight: 800;
+  font-size: 1.02rem;
+  color: var(--sc-texte);
+}
+.sc-rose__item--actif .sc-rose__initiale {
+  color: var(--sc-teinte);
+}
+
+.sc-alerte {
+  margin: 0;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.7rem;
+  border: 1px solid color-mix(in oklab, var(--ab-warn) 45%, transparent);
+  background: color-mix(in oklab, var(--ab-warn) 12%, var(--sc-fond-carte));
+  color: var(--sc-attention);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Notes & informations douceurs. */
+.sc-note {
+  display: flex;
+  gap: 0.45rem;
+  align-items: flex-start;
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--sc-doux);
+}
+.sc-note svg {
+  flex: none;
+  margin-top: 0.18rem;
+  color: var(--sc-teinte);
+}
+.sc-mot-info {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--sc-doux);
+}
+
+/* Pastilles & étiquettes. */
+.sc-pastille {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: var(--sc-fond-doux);
+  color: var(--sc-texte);
+}
+.sc-etiquette-rapide {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+  padding: 0.14rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: color-mix(in oklab, var(--ab-pass) 20%, var(--sc-fond-carte));
+  color: color-mix(in oklab, var(--ab-pass) 30%, var(--ab-ink));
+}
+.sc-puce--on .sc-etiquette-rapide {
+  background: color-mix(in oklab, #fff 20%, transparent);
+}
+
+/* ============================== Toasts ================================== */
+
+.sc-toasts {
+  position: fixed;
+  left: 50%;
+  bottom: calc(6.2rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: min(92vw, 26rem);
+  pointer-events: none;
+}
+.sc-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.7rem 0.95rem;
+  border-radius: 0.9rem;
+  background: color-mix(in oklab, var(--sc-fond-carte) 96%, transparent);
+  border: 1px solid var(--sc-bordure);
+  border-left: 5px solid var(--sc-vif);
+  box-shadow: var(--sc-ombre-nav);
+  color: var(--sc-texte);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.45;
+  animation: sc-toast-arrive 0.25s ease;
+}
+.sc-toast--bravo {
+  border-left-color: var(--ab-ok);
+}
+.sc-toast svg {
+  flex: none;
+  margin-top: 0.15rem;
+  color: var(--sc-teinte);
+}
+.sc-toast--bravo svg {
+  color: var(--sc-ok);
+}
+
+@keyframes sc-toast-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================== Barre d'onglets ========================== */
+/* Barre d'action accessible au pouce : flottante, large, contrastée. */
+
+.sc-nav {
+  position: fixed;
+  left: 50%;
+  bottom: max(0.65rem, env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 70;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.3rem;
+  width: min(94vw, 33rem);
+  padding: 0.35rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 1.15rem;
+  background: color-mix(in oklab, var(--sc-fond-carte) 94%, transparent);
+  box-shadow: var(--sc-ombre-nav);
+  backdrop-filter: blur(8px);
+}
+
+.sc-nav__bouton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.18rem;
+  min-height: 60px;
+  padding: 0.35rem 0.3rem;
+  border: 2px solid transparent;
+  border-radius: 0.85rem;
+  background: transparent;
+  color: var(--sc-doux);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sc-nav__bouton:hover {
+  background: var(--sc-fond-doux);
+  color: var(--sc-texte);
+}
+.sc-nav__bouton--actif {
+  background: var(--sc-vif);
+  color: var(--sc-vif-encre);
+  border-color: var(--sc-vif);
+}
+html[data-ab-theme='nuit'] .sc-nav__bouton--actif {
+  background: var(--sc-vif);
+}
+
+/* ============================== Journal ================================= */
+
+.sc-faits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+  gap: 0.7rem;
+}
+.sc-fait {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.8rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 0.9rem;
+  background: var(--sc-fond-doux);
+}
+.sc-fait__nombre {
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--sc-teinte);
+  font-variant-numeric: tabular-nums;
+}
+.sc-fait__libelle {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--sc-texte);
+}
+.sc-fait__libelle em {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: var(--sc-doux);
+}
+
+.sc-repartition {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.sc-repartition__ligne {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) 2rem;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.86rem;
+}
+.sc-repartition__nom {
+  font-weight: 700;
+  color: var(--sc-texte);
+}
+.sc-repartition__barre {
+  height: 0.65rem;
+  border-radius: 999px;
+  background: var(--sc-fond-doux);
+  overflow: hidden;
+}
+.sc-repartition__remplie {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--sc-vif), color-mix(in oklab, var(--sc-vif) 55%, var(--ab-ok)));
+  min-width: 0.25rem;
+}
+html[data-ab-theme='nuit'] .sc-repartition__remplie {
+  background: linear-gradient(90deg, color-mix(in oklab, var(--sc-vif) 80%, #fff), color-mix(in oklab, var(--ab-ok) 75%, #fff));
+}
+.sc-repartition__valeur {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--sc-texte);
+}
+
+.sc-liste-entrees {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+}
+.sc-entree {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 0.9rem;
+  background: var(--sc-fond);
+}
+.sc-entree__tete {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  align-items: baseline;
+}
+.sc-entree__date {
+  font-weight: 800;
+  color: var(--sc-texte);
+}
+.sc-entree__heure {
+  font-size: 0.8rem;
+  color: var(--sc-doux);
+  font-variant-numeric: tabular-nums;
+}
+.sc-entree__mesures {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.sc-pips {
+  display: inline-flex;
+  gap: 0.28rem;
+}
+.sc-pip {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 999px;
+  background: var(--sc-bordure);
+}
+.sc-pip--on {
+  background: var(--sc-vif);
+}
+html[data-ab-theme='nuit'] .sc-pip--on {
+  background: color-mix(in oklab, var(--sc-vif) 78%, #fff);
+}
+.sc-entree__humeur {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--sc-texte);
+}
+.sc-entree__balises {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.sc-entree__texte {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--sc-texte);
+  font-style: italic;
+}
+.sc-entree__actions {
+  display: flex;
+  gap: 0.35rem;
+  align-self: flex-end;
+}
+
+/* Puce checkbox d'entraide (texte + léger) */
+.puce-rapide {
+  color: var(--sc-ok);
+}
+
+/* ============================== Roue / radar ============================= */
+
+.sc-bandeau-maison {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem;
+  border: 1px dashed color-mix(in oklab, var(--sc-vif) 45%, var(--sc-bordure));
+  border-radius: 0.9rem;
+  background: var(--sc-fond-doux);
+}
+.sc-bandeau-maison__texte {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+.sc-bandeau-maison__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-teinte);
+}
+.sc-bandeau-maison__valeur {
+  font-weight: 700;
+  color: var(--sc-texte);
+  font-size: 0.95rem;
+}
+.sc-bandeau-maison__valeur em {
+  display: block;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: var(--sc-doux);
+}
+
+.sc-radar {
+  width: min(100%, 26rem);
+  align-self: center;
+  border-radius: 1rem;
+  background: var(--sc-fond);
+  border: 1px solid var(--sc-bordure);
+}
+.sc-radar__anneau {
+  fill: none;
+  stroke: var(--sc-bordure);
+  stroke-dasharray: 3 4.5;
+}
+.sc-radar__legende,
+.sc-radar__axe {
+  fill: var(--sc-doux);
+  font-size: 11px;
+  font-weight: 700;
+}
+.sc-radar__axe {
+  font-size: 12.5px;
+}
+.sc-radar__point {
+  cursor: pointer;
+}
+.sc-radar__point:focus-visible {
+  outline: none;
+}
+.sc-radar__point:focus-visible .sc-radar__halo,
+.sc-radar__point--cible .sc-radar__halo {
+  stroke: var(--sc-vif);
+  stroke-width: 2.4;
+}
+.sc-radar__halo {
+  fill: color-mix(in oklab, currentColor 20%, transparent);
+}
+.sc-radar__noyau {
+  fill: var(--sc-fond-carte);
+  stroke-width: 2.5;
+}
+.sc-radar__lettre {
+  fill: var(--sc-texte);
+  font-size: 11.5px;
+  font-weight: 800;
+  text-anchor: middle;
+  pointer-events: none;
+}
+/* Quatre familles : toutes les teintes dérivent de l'accent de la base et
+   passent par le jeton --sc-point, posé par la classe de type. */
+.sc-radar__halo {
+  fill: color-mix(in oklab, var(--sc-point, var(--sc-vif)) 18%, transparent);
+}
+.sc-radar__noyau {
+  fill: var(--sc-fond-carte);
+  stroke: var(--sc-point, var(--sc-vif));
+  stroke-width: 2.5;
+}
+.sc-radar__lettre {
+  fill: var(--sc-texte);
+  font-size: 11.5px;
+  font-weight: 800;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.sc-radar__halo--sante,
+.sc-radar__noyau--sante { --sc-point: var(--sc-famille-sante); }
+.sc-radar__halo--entraide,
+.sc-radar__noyau--entraide { --sc-point: var(--sc-famille-entraide); }
+.sc-radar__halo--ecole,
+.sc-radar__noyau--ecole { --sc-point: var(--sc-famille-ecole); }
+.sc-radar__halo--transit,
+.sc-radar__noyau--transit { --sc-point: var(--sc-famille-transit); }
+
+.sc-radar__maison-cercle {
+  fill: var(--sc-vif);
+}
+.sc-radar__maison-coeur {
+  fill: var(--sc-vif-encre);
+}
+
+.sc-liste-radar {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+.sc-choix-mini {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 48px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 0.7rem;
+  background: var(--sc-fond);
+  font: inherit;
+  color: var(--sc-texte);
+  cursor: pointer;
+  text-align: left;
+}
+.sc-choix-mini:hover {
+  background: var(--sc-fond-doux);
+}
+.sc-choix-mini--on {
+  border-color: var(--sc-vif);
+  background: var(--sc-fond-doux);
+}
+.sc-choix-mini__texte {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sc-choix-mini__texte strong {
+  font-weight: 800;
+}
+.sc-choix-mini__texte small {
+  color: var(--sc-doux);
+  font-size: 0.8rem;
+}
+
+.sc-liste-entourage {
+  list-style: none;
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+}
+.sc-fiche-mini {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.8rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 0.9rem;
+  background: var(--sc-fond);
+}
+.sc-fiche-mini__tete {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+.sc-fiche-mini__lettre {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: none;
+  border-radius: 0.7rem;
+  font-weight: 800;
+  font-size: 1.05rem;
+  background: var(--sc-fond-doux);
+  color: var(--sc-teinte);
+  border: 2px solid transparent;
+}
+.sc-fiche-mini__lettre[data-type='sante'] {
+  border-color: var(--sc-famille-sante);
+  color: var(--sc-famille-sante);
+}
+.sc-fiche-mini__lettre[data-type='entraide'] {
+  border-color: var(--sc-famille-entraide);
+  color: var(--sc-famille-entraide);
+}
+.sc-fiche-mini__lettre[data-type='ecole'] {
+  border-color: var(--sc-famille-ecole);
+  color: var(--sc-famille-ecole);
+}
+.sc-fiche-mini__lettre[data-type='transit'] {
+  border-color: var(--sc-famille-transit);
+  color: var(--sc-famille-transit);
+}
+.sc-fiche-mini__noms {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sc-fiche-mini__noms strong {
+  font-weight: 800;
+  font-size: 1rem;
+}
+.sc-fiche-mini__noms span {
+  font-size: 0.84rem;
+  color: var(--sc-doux);
+}
+
+.sc-fiche {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 2px solid var(--sc-vif);
+  border-radius: 1rem;
+  background: var(--sc-fond-doux);
+}
+.sc-fiche__tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.sc-fiche__nom {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--sc-texte);
+}
+.sc-fiche__ligne {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--sc-texte);
+}
+.sc-fiche__ligne--exemple {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.86rem;
+  color: var(--sc-doux);
+}
+.sc-fiche__ligne svg {
+  color: var(--sc-attention);
+  flex: none;
+}
+.sc-fiche__sans-route {
+  font-size: 0.86rem;
+  color: var(--sc-doux);
+}
+
+/* ============================== Respiration ============================== */
+
+.sc-respire-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+.sc-respire {
+  display: grid;
+  place-items: center;
+  width: min(72vw, 15.5rem);
+  aspect-ratio: 1;
+}
+.sc-respire__cercle {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+.sc-respire__anneau {
+  fill: none;
+  stroke: var(--sc-bordure);
+  stroke-width: 3;
+  stroke-dasharray: 3 5;
+}
+.sc-respire__disque {
+  fill: color-mix(in oklab, var(--sc-vif) 16%, transparent);
+  stroke: var(--sc-vif);
+  stroke-width: 2.5;
+}
+html[data-ab-theme='nuit'] .sc-respire__disque {
+  fill: color-mix(in oklab, var(--sc-vif) 22%, transparent);
+  stroke: color-mix(in oklab, var(--sc-vif) 78%, #fff);
+}
+.sc-respire--souffle .sc-respire__disque {
+  fill: color-mix(in oklab, var(--sc-vif) 26%, transparent);
+}
+.sc-respire__compte {
+  position: absolute;
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--sc-teinte);
+  font-variant-numeric: tabular-nums;
+}
+.sc-respire {
+  position: relative;
+}
+.sc-respire__consigne {
+  margin: 0;
+  min-height: 3rem;
+  text-align: center;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--sc-texte);
+  max-width: 30rem;
+}
+.sc-respire__secondaire {
+  margin: 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--sc-doux);
+  min-height: 1.3rem;
+}
+
+/* Exercice 5-4-3-2-1 */
+.sc-ancrage {
+  margin: 0;
+  padding-left: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.95rem;
+  color: var(--sc-texte);
+}
+.sc-ancrage strong {
+  color: var(--sc-teinte);
+}
+
+/* ============================== Pochette ================================= */
+
+.sc-poche {
+  display: grid;
+  gap: 1rem;
+}
+.sc-poche__bloc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 0.9rem;
+  background: var(--sc-fond);
+}
+.sc-poche__titre {
+  padding: 0 0.4rem;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--sc-teinte);
+}
+.sc-poche__silence {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--sc-doux);
+}
+.sc-poche__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.sc-poche__ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.7rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 0.7rem;
+  background: var(--sc-fond-carte);
+}
+.sc-poche__nom {
+  font-weight: 800;
+  color: var(--sc-texte);
+}
+.sc-poche__role {
+  font-size: 0.8rem;
+  color: var(--sc-doux);
+}
+.sc-poche__tel {
+  margin-left: auto;
+  font-weight: 800;
+  color: var(--sc-teinte);
+  font-variant-numeric: tabular-nums;
+  text-decoration-thickness: 2px;
+}
+.sc-poche__liste--puces {
+  gap: 0.3rem;
+}
+.sc-poche__objet {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 0.7rem;
+  background: var(--sc-fond-carte);
+  color: var(--sc-texte);
+  font-weight: 600;
+}
+
+.sc-ajout-ligne {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+@media (min-width: 640px) {
+  .sc-ajout-ligne {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  }
+  .sc-ajout-ligne--deux {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+.sc-ajout-ligne__bouton {
+  align-self: end;
+}
+
+.sc-numeros {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: 0.55rem;
+}
+.sc-numero {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--sc-bordure);
+  border-radius: 0.9rem;
+  background: var(--sc-fond);
+}
+.sc-numero__chiffre {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.1rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.7rem;
+  background: var(--sc-vif);
+  color: var(--sc-vif-encre);
+  font-weight: 800;
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+.sc-numero__role {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--sc-texte);
+}
+
+.sc-donnees {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.95rem;
+  color: var(--sc-texte);
+}
+.sc-donnees strong {
+  color: var(--sc-teinte);
+}
+
+.sc-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.9rem;
+  border: 2px solid color-mix(in oklab, var(--ab-warn) 45%, transparent);
+  border-radius: 0.9rem;
+  background: color-mix(in oklab, var(--ab-warn) 8%, var(--sc-fond-carte));
+}
+.sc-confirm p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--sc-texte);
+}
+
+.sc-entree-fichier {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+/* ============================== États vides ============================== */
+
+.sc-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.6rem 1rem;
+  text-align: center;
+  border: 2px dashed color-mix(in oklab, var(--sc-vif) 30%, var(--sc-bordure));
+  border-radius: 1rem;
+  background: var(--sc-fond-doux);
+}
+.sc-vide__deco {
+  width: min(11rem, 62vw);
+  color: var(--sc-teinte);
+  opacity: 0.75;
+}
+.sc-vide__titre {
+  margin: 0;
+  font-weight: 800;
+  font-size: 1.02rem;
+  color: var(--sc-texte);
+}
+.sc-vide__texte {
+  margin: 0;
+  max-width: 26rem;
+  font-size: 0.9rem;
+  color: var(--sc-doux);
+}
+
+/* ============================== Responsive =============================== */
+
+@media (min-width: 720px) {
+  .sc-fiche-mini {
+    padding: 0.9rem 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sc-carte__titre {
+    font-size: 1.12rem;
+  }
+  .sc-fait {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .sc-repartition__ligne {
+    grid-template-columns: 4.6rem minmax(0, 1fr) 1.4rem;
+  }
+  .sc-toast {
+    bottom: unset;
+  }
+}
+
+/* ============================== Impression ================================ */
+/* Seule la pochette sort : bien lisible, encres économisées. */
+
+@media print {
+  body > * {
+    visibility: hidden;
+  }
+  .ab-shell,
+  .ab-shell * {
+    visibility: hidden;
+  }
+  .sc-poche,
+  .sc-poche * {
+    visibility: visible;
+  }
+  .sc-poche {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+  .sc-actions,
+  .sc-ajout-ligne,
+  .sc-alerte {
+    display: none !important;
+  }
+  .sc-poche__bloc {
+    border: 1px solid #333;
+    break-inside: avoid;
+  }
+  .sc-poche__titre,
+  .sc-poche__nom,
+  .sc-poche__tel,
+  .sc-poche__objet {
+    color: #000;
+  }
+  .sc-poche__tel {
+    text-decoration: underline;
+  }
+}
+
+/* ============================== Mouvement réduit ========================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-respire__disque {
+    transition: none !important;
+  }
+  .sc-toast {
+    animation: none;
+  }
+  .sc-sauter {
+    transition: none;
+  }
+  * {
+    scroll-behavior: auto !important;
+  }
+}

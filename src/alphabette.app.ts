@@ -22,6 +22,13 @@ export const APP: AlphaAppConfig = {
   accountUrl: 'https://alphabette.fr/compte',
   apiKeysUrl: 'https://alphabette.fr/cles',
 
+  /**
+   * Application d'intérêt public (aidants familiaux, prévention, entraide) :
+   * déclarée définitivement gratuite. La base n'affiche alors ni prix, ni
+   * essai, ni paiement — l'écosystème finance l'application.
+   */
+  gratuit: true,
+
   // Compteur de la barre écosystème : calculé automatiquement depuis le
   // registre central (X applications en ligne / Y au total). Pour forcer des
   // valeurs précises (ex. essai en cours), décommenter :

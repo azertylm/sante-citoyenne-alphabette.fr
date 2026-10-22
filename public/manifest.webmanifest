@@ -1,0 +1,33 @@
+{
+  "name": "Santé Citoyenne — prévention douce et entraide",
+  "short_name": "SantéCitoyen",
+  "description": "Carnet de suivi, respiration apaisante, carte de proximité et pochette d'urgence : tout sur votre appareil, sans compte, hors-ligne compris.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8fafc",
+  "theme_color": "#155e75",
+  "categories": ["health", "lifestyle", "social"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
