@@ -1435,3 +1435,18 @@ html[data-ab-theme='nuit'] .sc-respire__disque {
     scroll-behavior: auto !important;
   }
 }
+
+/* Proposition d'écoute après une journée lourde : douce, jamais alarmante. */
+.sc-ecoute {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--sc-vif);
+  background: color-mix(in srgb, var(--sc-vif) 8%, transparent);
+}
+.sc-ecoute p { margin: 0 0 0.6rem; }
+.sc-ecoute__titre { font-weight: 700; }
+a.sc-numero__chiffre { text-decoration: none; }
+.sc-numero__chiffre { white-space: nowrap; flex-shrink: 0; }
+/* Numéros à 10 chiffres : plus petits pour laisser la place au libellé. */
+.sc-numero__chiffre--long { font-size: 1rem; }

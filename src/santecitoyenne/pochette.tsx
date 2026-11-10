@@ -20,6 +20,8 @@ const NUMEROS = [
   { numero: '17', role: 'Police — gendarmerie' },
   { numero: '18', role: 'Pompiers' },
   { numero: '114', role: 'Urgences par SMS (sourds et malentendants)' },
+  { numero: '3114', role: 'Prévention du suicide — écoute gratuite, 24 h/24' },
+  { numero: '09 72 39 40 50', role: 'SOS Amitié — parler à quelqu’un, 24 h/24' },
 ] as const;
 
 const POCHETTE_VIDE: PochetteData = { contacts: [], litteries: [], consignes: '' };
@@ -243,7 +245,10 @@ export function PochetteSection() {
         <ul className="sc-numeros">
           {NUMEROS.map((n) => (
             <li key={n.numero} className="sc-numero">
-              <span className="sc-numero__chiffre">{n.numero}</span>
+              <a
+                className={`sc-numero__chiffre${n.numero.length > 4 ? ' sc-numero__chiffre--long' : ''}`}
+                href={`tel:${n.numero.replace(/\s/g, '')}`}
+              >{n.numero}</a>
               <span className="sc-numero__role">{n.role}</span>
             </li>
           ))}

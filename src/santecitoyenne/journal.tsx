@@ -5,7 +5,7 @@
  * compte, sans jugement, avec des indicateurs d'impact qui encouragent sans
  * jamais inquiéter. Tout est sauvegardé sur l'appareil (LocalStorage).
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Carte, EtatVide, Note, Pastille, useVoix } from './commun';
 import { ICoche, ICorbeille } from './icons';
 import {
@@ -79,6 +79,12 @@ export function Journal() {
   const [dateForm, setDateForm] = useState<string>(aujourdhuiISO());
   const [energie, setEnergie] = useState<number>(0);
   const [humeur, setHumeur] = useState<Humeur | null>(null);
+  /** Après une journée lourde ou une énergie très basse : proposer une écoute, sans insister. */
+  const [ecoute, setEcoute] = useState(false);
+  const refEcoute = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (ecoute) refEcoute.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [ecoute]);
   const [balisesChoisies, setBalisesChoisies] = useState<string[]>([]);
   const [texte, setTexte] = useState('');
   const [erreur, setErreur] = useState('');
@@ -110,6 +116,7 @@ export function Journal() {
       return;
     }
     setErreur('');
+    setEcoute(humeur === 'lourd' || energie <= 1);
     const nouvelle: Entree = {
       id: entreeDuJour?.id ?? nouvelId(),
       date: dateForm,
@@ -292,6 +299,26 @@ export function Journal() {
             Votre carnet reste sur cet appareil — jamais envoyé, jamais consulté ailleurs.
           </Note>
         </form>
+
+        {ecoute && (
+          <div className="sc-ecoute" role="status" ref={refEcoute}>
+            <p className="sc-ecoute__titre">Une journée lourde, ça arrive. Vous n’êtes pas seul·e.</p>
+            <p>Si vous avez envie d’en parler à quelqu’un, maintenant ou cette nuit :</p>
+            <ul className="sc-numeros">
+              <li className="sc-numero">
+                <a className="sc-numero__chiffre sc-numero__chiffre--long" href="tel:0972394050">09 72 39 40 50</a>
+                <span className="sc-numero__role">SOS Amitié — écoute anonyme et gratuite, 24 h/24</span>
+              </li>
+              <li className="sc-numero">
+                <a className="sc-numero__chiffre" href="tel:3114">3114</a>
+                <span className="sc-numero__role">Si des idées noires vous traversent — gratuit, jour et nuit</span>
+              </li>
+            </ul>
+            <button type="button" className="sc-btn sc-btn--txt" onClick={() => setEcoute(false)}>
+              Merci, ça va
+            </button>
+          </div>
+        )}
       </Carte>
 
       {/* Indicateurs d'impact : généreux, jamais intimidants. */}
